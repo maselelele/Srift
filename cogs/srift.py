@@ -20,9 +20,21 @@ class Srift(commands.Cog):
             if 'SRIFT-BOT' not in channels:
                 srift_category = await guild.create_category_channel('SRIFT-BOT')
                 srift_text = await guild.create_text_channel(name='srift-bot', category=srift_category)
-                servers.update(
-                    {guild.id: [srift_category.id, srift_text.id]})
+                with open('data/servers.json', 'w') as f:
+                    servers.update(
+                        {guild.id: [srift_category.id, srift_text.id]})
+                    json.dump(servers, f, indent=4)
+                embed = discord.Embed(
+                    title='Create your channel', color=0x0cc2b7)
+                embed.add_field(name='Create your channel',
+                                value=f'React with  \U0001F7E2', inline=True)
+                embed.add_field(name='Delete your channel',
+                                value=f'React with  \U0001F534', inline=True)
+
+                msg = await srift_text.send(embed=embed)
                 await ctx.send(f'Srift channels created!')
+                await msg.add_reaction('\U0001F7E2')
+                await msg.add_reaction('\U0001F534')
             else:
                 await ctx.send(f'Bot is already initialized!\nTry to terminate the existing channels.')
                 return
@@ -32,12 +44,11 @@ class Srift(commands.Cog):
                 for channel in guild.channels:
                     if channel.id in servers[f'{guild.id}']:
                         await channel.delete()
-                servers.clear()
+                with open('data/servers.json', 'w') as f:
+                    servers.clear()
+                    json.dump(servers, f, indent=4)
             else:
                 await ctx.send(f'No Srift channels have been initialized yet.')
-
-        with open('data/servers.json', 'w') as f:
-            json.dump(servers, f, indent=4)
 
 
 def setup(client):

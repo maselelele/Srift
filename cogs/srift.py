@@ -35,6 +35,8 @@ class Srift(commands.Cog):
                 await ctx.send(f'Srift channels created!')
                 await msg.add_reaction('\U0001F7E2')
                 await msg.add_reaction('\U0001F534')
+                with open('data/messages.json', 'w') as f:
+                    json.dump({guild.id: msg.id}, f, indent=4)
             else:
                 await ctx.send(f'Bot is already initialized!\nTry to terminate the existing channels.')
                 return

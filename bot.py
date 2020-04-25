@@ -15,18 +15,21 @@ client = commands.Bot(command_prefix='>')
 
 
 @client.command(hidden=True)
+@commands.has_guild_permissions(administrator=True)
 async def load(ctx, extension):
     client.load_extension(f'cogs.{extension}')
     await ctx.send(f'Extension {extension} loaded.')
 
 
 @client.command(hidden=True)
+@commands.has_guild_permissions(administrator=True)
 async def unload(ctx, extension):
     client.unload_extension(f'cogs.{extension}')
     await ctx.send(f'Extension {extension} unloaded')
 
 
 @client.command(hidden=True)
+@commands.has_guild_permissions(administrator=True)
 async def reload(ctx, extension=None):
     if extension is None:
         for filename in os.listdir('./cogs'):
@@ -39,6 +42,7 @@ async def reload(ctx, extension=None):
 
 
 @client.command(hidden=True)
+@commands.has_guild_permissions(administrator=True)
 async def quit(ctx):
     await ctx.send(f'Stopping Srift Bot.')
     await client.close()

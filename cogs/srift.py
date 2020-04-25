@@ -7,8 +7,9 @@ class Srift(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(aliases=['srift', 'sr', 's'])
-    async def Srift(self, ctx, subcommand=None):
+    @commands.command(aliases=['Srift', 'sr', 's'])
+    @commands.has_guild_permissions(administrator=True)
+    async def srift(self, ctx, subcommand=None):
         guild = ctx.message.guild
         if subcommand == 'init':
             await ctx.send(f'Initializing Srift channels...')
@@ -56,6 +57,11 @@ class Srift(commands.Cog):
                     json.dump(data, f, indent=4)
             except KeyError as err:
                 await ctx.send(f'No Srift channels have been initialized yet.')
+
+    @srift.error
+    async def srift_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.message.add_reaction('\U000026D4')
 
 
 def setup(client):

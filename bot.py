@@ -48,6 +48,30 @@ async def quit(ctx):
     await client.close()
 
 
+@load.error
+async def load_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.message.add_reaction('\U000026D4')
+
+
+@unload.error
+async def unload_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.message.add_reaction('\U000026D4')
+
+
+@reload.error
+async def reload_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.message.add_reaction('\U000026D4')
+
+
+@quit.error
+async def quit_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.message.add_reaction('\U000026D4')
+
+
 @client.event
 async def on_connect():
     print('Srift Bot is connected to Discord')

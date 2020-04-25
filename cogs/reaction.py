@@ -12,9 +12,9 @@ class Reaction(commands.Cog):
     async def on_raw_reaction_add(self, payload):
         if payload.user_id == self.client.user.id:
             return
-        with open('data/messages.json', 'r') as f:
-            messages = json.load(f)
-        if payload.message_id == messages[f'{payload.guild_id}']:
+        with open('data/data.json', 'r') as f:
+            data = json.load(f)
+        if payload.message_id == data[f'{payload.guild_id}']['message_id']:
             reaction_guild = self.client.get_guild(payload.guild_id)
             reaction_channel = self.client.get_channel(payload.channel_id)
             reaction_message = await reaction_channel.fetch_message(payload.message_id)

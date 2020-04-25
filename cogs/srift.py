@@ -10,8 +10,6 @@ class Srift(commands.Cog):
     @commands.command(aliases=['srift', 'sr', 's'])
     async def Srift(self, ctx, subcommand=None):
         guild = ctx.message.guild
-        with open('data/servers.json', 'r') as f:
-            servers = json.load(f)
         if subcommand == 'init':
             await ctx.send(f'Initializing Srift channels...')
             channels = []
@@ -20,10 +18,12 @@ class Srift(commands.Cog):
             if 'SRIFT-BOT' not in channels:
                 srift_category = await guild.create_category_channel('SRIFT-BOT')
                 srift_text = await guild.create_text_channel(name='srift-bot', category=srift_category)
-                with open('data/servers.json', 'w') as f:
-                    servers.update(
-                        {guild.id: [srift_category.id, srift_text.id]})
-                    json.dump(servers, f, indent=4)
+                with open('data/data.json', 'r') as f:
+                    data = json.load(f)
+                with open('data/data.json', 'w') as f:
+                    data.update(
+                        {guild.id: {'channel_ids': [srift_category.id, srift_text.id]}})
+                    json.dump(data, f, indent=4)
                 embed = discord.Embed(
                     title='Create your channel', color=0x0cc2b7)
                 embed.add_field(name='Create your channel',
@@ -35,21 +35,26 @@ class Srift(commands.Cog):
                 await ctx.send(f'Srift channels created!')
                 await msg.add_reaction('\U0001F7E2')
                 await msg.add_reaction('\U0001F534')
-                with open('data/messages.json', 'w') as f:
-                    json.dump({guild.id: msg.id}, f, indent=4)
+                with open('data/data.json', 'r') as f:
+                    data = json.load(f)
+                with open('data/data.json', 'w') as f:
+                    data[f'{guild.id}'].update({'message_id': msg.id})
+                    json.dump(data, f, indent=4)
             else:
                 await ctx.send(f'Bot is already initialized!\nTry to terminate the existing channels.')
                 return
         elif subcommand == 'term':
+            with open('data/data.json', 'r') as f:
+                data = json.load(f)
             await ctx.send(f'Terminating Srift Channels...')
-            if bool(servers):
+            try:
                 for channel in guild.channels:
-                    if channel.id in servers[f'{guild.id}']:
+                    if channel.id in data[f'{guild.id}']['channel_ids']:
                         await channel.delete()
-                with open('data/servers.json', 'w') as f:
-                    servers.clear()
-                    json.dump(servers, f, indent=4)
-            else:
+                with open('data/data.json', 'w') as f:
+                    del data[f'{guild.id}']
+                    json.dump(data, f, indent=4)
+            except KeyError as err:
                 await ctx.send(f'No Srift channels have been initialized yet.')
 
 

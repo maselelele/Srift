@@ -18,6 +18,7 @@ client = commands.Bot(command_prefix='>')
 @commands.has_guild_permissions(administrator=True)
 async def load(ctx, extension):
     client.load_extension(f'cogs.{extension}')
+    print(f'Extension {extension} loaded by {ctx.author}')
     await ctx.send(f'Extension {extension} loaded.')
 
 
@@ -25,6 +26,7 @@ async def load(ctx, extension):
 @commands.has_guild_permissions(administrator=True)
 async def unload(ctx, extension):
     client.unload_extension(f'cogs.{extension}')
+    print(f'Extension {extension} unloaded by {ctx.author}')
     await ctx.send(f'Extension {extension} unloaded')
 
 
@@ -35,15 +37,18 @@ async def reload(ctx, extension=None):
         for filename in os.listdir('./cogs'):
             if filename.endswith('.py'):
                 client.reload_extension(f'cogs.{filename[:-3]}')
-                await ctx.send(f'All Extensions reloaded.')
+        print(f'All Extensions reloaded by {ctx.author}')
+        await ctx.send(f'All Extensions reloaded.')
     else:
         client.reload_extension(f'cogs.{extension}')
+        print(f'Extension {extension} reloaded by {ctx.author}')
         await ctx.send(f'Extension {extension} reloaded.')
 
 
 @client.command(hidden=True)
 @commands.has_guild_permissions(administrator=True)
 async def quit(ctx):
+    print(f'Bot stopped by {ctx.author}')
     await ctx.send(f'Stopping Srift Bot.')
     await client.close()
 

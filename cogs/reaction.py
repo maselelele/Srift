@@ -14,6 +14,8 @@ class Reaction(commands.Cog):
             return
         with open('data/data.json', 'r') as f:
             data = json.load(f)
+        if str(payload.guild_id) not in data.keys():
+            return
         if payload.message_id == data[f'{payload.guild_id}']['message_id']:
             reaction_guild = self.client.get_guild(payload.guild_id)
             reaction_channel = self.client.get_channel(payload.channel_id)

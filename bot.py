@@ -4,9 +4,22 @@ from discord.ext import commands
 
 
 def read_token():
+    if os.path.isfile('data/token.txt'):
+        with open('data/token.txt', 'r+') as f:
+            if os.path.getsize('data/token.txt') == 0:
+                f.write("- Change this line to your discord bot token -")
+    else:
+        with open('data/token.txt', 'w') as f:
+            f.write("- Change this line to your discord bot token -")
+
     with open('data/token.txt', 'r') as f:
         lines = f.readlines()
-    return lines[0].strip()
+
+    if lines[0] == "- Change this line to your discord bot token -":
+        print('Edit data/token.txt file and restart the bot!')
+        return None
+    else:
+        return lines[0].strip()
 
 
 token = read_token()
@@ -85,10 +98,17 @@ async def on_connect():
 @client.event
 async def on_ready():
     print('Bot ist ready!')
+    if os.path.isfile('data/data.json'):
+        with open('data/data.json', 'r+') as f:
+            if os.path.getsize('data/data.json') == 0:
+                f.write("{}")
+    else:
+        with open('data/data.json', 'w') as f:
+            f.write("{}")
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
 
-
-client.run(token)
+if token is not None:
+    client.run(token)

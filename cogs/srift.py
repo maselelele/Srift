@@ -36,7 +36,6 @@ class Srift(commands.Cog):
                 await ctx.send(f'Srift channels created!')
                 await msg.add_reaction('\U0001F7E2')
                 await msg.add_reaction('\U0001F534')
-                # TODO: Merge read and write modes
                 with open('data/data.json', 'r') as f:
                     data = json.load(f)
                 with open('data/data.json', 'w') as f:

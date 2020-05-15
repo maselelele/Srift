@@ -30,7 +30,7 @@ class Reaction(commands.Cog):
                     if type(channel) == discord.channel.TextChannel:
                         if channel.topic == user_full_name:
                             return
-                user_channel = await reaction_guild.create_text_channel(name=f'{reaction_guild.get_member(payload.user_id).nick}', category=reaction_category)
+                user_channel = await reaction_guild.create_text_channel(name=f'{reaction_guild.get_member(payload.user_id).display_name}', category=reaction_category)
                 await user_channel.edit(topic=user_full_name)
                 with open('data/data.json', 'r') as f:
                     data = json.load(f)
@@ -45,7 +45,7 @@ class Reaction(commands.Cog):
                 try:
                     for channel in reaction_guild.channels:
                         if channel.id in data[f'{reaction_guild.id}']['channel_ids']:
-                            if channel.name == reaction_guild.get_member(payload.user_id).nick.lower():
+                            if channel.name == reaction_guild.get_member(payload.user_id).display_name.lower():
                                 if channel.topic == user_full_name:
                                     await channel.delete()
                                     with open('data/data.json', 'w') as f:

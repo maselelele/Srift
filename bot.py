@@ -1,6 +1,7 @@
 import discord
 import os
 from discord.ext import commands
+from database.mongo import Mongo, SriftGuild
 
 
 def read_token():
@@ -25,6 +26,8 @@ def read_token():
 token = read_token()
 
 client = commands.Bot(command_prefix='>')
+
+db = Mongo()
 
 
 @client.command(hidden=True)
@@ -93,18 +96,28 @@ async def quit_error(ctx, error):
 @client.event
 async def on_connect():
     print('Srift Bot is connected to Discord')
+    try:
+        db.connect()
+    except Exception as e:
+        print(e.__str__())
+
+
+@client.event
+async def on_guild_join(guild):
+    SriftGuild(
+        guild_id=guild.id,
+        initialized=False
+    ).save()
+
+
+@client.event
+async def on_guild_remove(guild):
+    SriftGuild.objects(guild_id=guild.id).delete()
 
 
 @client.event
 async def on_ready():
     print('Bot ist ready!')
-    if os.path.isfile('data/data.json'):
-        with open('data/data.json', 'r+') as f:
-            if os.path.getsize('data/data.json') == 0:
-                f.write("{}")
-    else:
-        with open('data/data.json', 'w') as f:
-            f.write("{}")
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):

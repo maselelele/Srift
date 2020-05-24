@@ -1,23 +1,29 @@
 from mongoengine.fields import DateTimeField, IntField, BooleanField, DictField, ListField
 from mongoengine import QuerySet, Document, connect
 from datetime import datetime
+from utils.config import SriftConfig
 
 
 class Mongo():
-    def __init__(self):
-        self.db = 'srift'
+    def __init__(self, db, host, port):
+        self.db = db
+        self.host = host
+        self.port = int(port)
         self.connection = None
 
     def connect(self):
-        conn = connect(
-            # Currently using a local database
-            db=self.db
-            # username='',
-            # password='',
-            # host=''
-        )
+        try:
+            print('Connecting to database...')
+            self.connection = connect(
+                db=self.db,
+                host=self.host,
+                port=self.port
+            )
+        except Exception as connectionerr:
+            print(str(connectionerr))
+            raise SystemExit(0)
 
-        self.connection = conn
+        return self.connection
 
     def getDatabase(self):
         return self.db

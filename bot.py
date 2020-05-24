@@ -1,30 +1,17 @@
 import discord
 import os
 from discord.ext import commands
+from discord.errors import LoginFailure
+from database.mongo import Mongo, SriftGuild
+from utils.config import SriftConfig
 
-
-def read_token():
-    if os.path.isfile('data/token.txt'):
-        with open('data/token.txt', 'r+') as f:
-            if os.path.getsize('data/token.txt') == 0:
-                f.write("- Change this line to your discord bot token -")
-    else:
-        with open('data/token.txt', 'w') as f:
-            f.write("- Change this line to your discord bot token -")
-
-    with open('data/token.txt', 'r') as f:
-        lines = f.readlines()
-
-    if lines[0] == "- Change this line to your discord bot token -":
-        print('Edit data/token.txt file and restart the bot!')
-        return None
-    else:
-        return lines[0].strip()
-
-
-token = read_token()
-
+token = SriftConfig().getParsedConfig().get('discord', 'token')
 client = commands.Bot(command_prefix='>')
+Mongo(
+    SriftConfig().getParsedConfig().get('mongoengine', 'db'),
+    SriftConfig().getParsedConfig().get('mongoengine', 'host'),
+    SriftConfig().getParsedConfig().get('mongoengine', 'port')
+).connect()
 
 
 @client.command(hidden=True)
@@ -96,19 +83,27 @@ async def on_connect():
 
 
 @client.event
+async def on_guild_join(guild):
+    SriftGuild(
+        guild_id=guild.id,
+        initialized=False
+    ).save()
+
+
+@client.event
+async def on_guild_remove(guild):
+    SriftGuild.objects(guild_id=guild.id).delete()
+
+
+@client.event
 async def on_ready():
     print('Bot ist ready!')
-    if os.path.isfile('data/data.json'):
-        with open('data/data.json', 'r+') as f:
-            if os.path.getsize('data/data.json') == 0:
-                f.write("{}")
-    else:
-        with open('data/data.json', 'w') as f:
-            f.write("{}")
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
 
-if token is not None:
+try:
     client.run(token)
+except LoginFailure as loginerr:
+    print(str(loginerr) + ' Please edit the config.ini file.')

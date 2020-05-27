@@ -4,6 +4,7 @@ from database.mongo import SriftUser
 from concurrent.futures._base import TimeoutError
 from utils.riot import RiotConnection
 from discord.utils import get
+from discord.errors import NotFound
 
 
 class UserChannel(commands.Cog):
@@ -21,6 +22,15 @@ class UserChannel(commands.Cog):
             data = None
 
         if data is None:
+            # Set some permissions
+            await self.channel.set_permissions(self.payload.member.guild.default_role, read_messages=False)
+
+            user_overwrite = discord.PermissionOverwrite()
+            user_overwrite.read_messages = True
+            user_overwrite.add_reactions = False
+            user_overwrite.create_instant_invite = False
+            await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
+
             # Create a user
             welcome_embed = discord.Embed(
                 title='Welcome to the Srift Bot!',
@@ -31,12 +41,21 @@ class UserChannel(commands.Cog):
             await self.channel.send(embed=welcome_embed)
             try:
                 name_message = await self.client.wait_for('message', timeout=30.0)
+
+                user_overwrite.send_messages = False
+                await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
+
                 if name_message.channel.id != self.channel.id:
                     return
                 if f'{name_message.author.name}#{name_message.author.discriminator}' != f'{name_message.channel.topic}':
                     return
             except TimeoutError as toe:
-                await self.channel.send('You needed too long, please recreate your channel')
+                try:
+                    await self.channel.send('You needed too long, please recreate your channel')
+                    user_overwrite.send_messages = False
+                    await self.channel.set_permissions(self.payload.member.guild.default_role, overwrite=user_overwrite)
+                except NotFound as nfe:
+                    return
                 return
             regions = {
                 'BR1': '0\U000020E3',
@@ -79,11 +98,21 @@ class UserChannel(commands.Cog):
                 # -- Check if summoner name exists
                 if self.riot_api.verifySummonerName(name_message.content, user_region.lower()):
                     await self.channel.send(f'Looks like your summoner name is valid in {user_region}!')
+                    user_overwrite.send_messages = False
+                    await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                 else:
                     await self.channel.send('Invalid summoner name, please recreate your channel!')
+                    user_overwrite.send_messages = False
+                    await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                     return
             except TimeoutError as toe:
-                await self.channel.send('You needed too long, please recreate your channel')
+                try:
+                    await self.channel.send('You needed too long, please recreate your channel')
+                    user_overwrite.send_messages = False
+                    await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
+                except NotFound as nfe:
+                    return
+                return
 
         else:
             # TODO: User existing

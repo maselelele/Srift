@@ -1,4 +1,4 @@
-from mongoengine.fields import DateTimeField, IntField, BooleanField, DictField, ListField
+from mongoengine.fields import DateTimeField, IntField, BooleanField, DictField, ListField, StringField
 from mongoengine import QuerySet, Document, connect
 from datetime import datetime
 from utils.config import SriftConfig
@@ -41,5 +41,17 @@ class SriftGuild(Document):
 
     meta = {
         'indexes': ['guild_id'],
+        'ordering': ['-date_created']
+    }
+
+
+class SriftUser(Document):
+    date_created = DateTimeField(default=datetime.utcnow)
+    discord_id = IntField()
+    verified = BooleanField(default=False)
+    summoner_id = StringField()
+
+    meta = {
+        'indexes': ['discord_id'],
         'ordering': ['-date_created']
     }

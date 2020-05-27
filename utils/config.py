@@ -15,6 +15,9 @@ class SriftConfig():
             self.config.set('mongoengine', 'db', 'srift')
             self.config.set('mongoengine', 'host', 'localhost')
             self.config.set('mongoengine', 'port', '27017')
+            self.config.add_section('riot')
+            self.config.set('riot', 'token', 'your riot token')
+            self.config.set('riot', 'region', 'EUW1')
 
             os.makedirs(self.config_path[:-11])
             with open(self.config_path, 'w') as f:

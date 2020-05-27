@@ -3,6 +3,7 @@ import json
 from discord.ext import commands
 from discord import abc
 from database.mongo import SriftGuild
+from cogs.userchannel import UserChannel
 
 
 class Reaction(commands.Cog):
@@ -45,6 +46,7 @@ class Reaction(commands.Cog):
                 SriftGuild.objects(guild_id=payload.guild_id).get().update(
                     user_channels=user_channels_dict
                 )
+                await UserChannel(self.client).sendMessageOnCreation(payload, user_channel)
 
             # Delete user channel
             elif payload.emoji.name == '\U0001F534':

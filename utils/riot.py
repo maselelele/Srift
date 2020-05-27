@@ -1,5 +1,6 @@
 from utils.config import SriftConfig
 import requests as re
+import json
 
 
 class RiotConnection():
@@ -18,6 +19,26 @@ class RiotConnection():
         response = re.get(
             f'https://{summonerRegion}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}?api_key={self.token}')
         if response.status_code == 200:
+            return True
+        else:
+            return False
+
+    # Get the encryptedSummonerId from summonerName
+    def getEncryptedSummonerIdByName(self, summonerName, summonerRegion):
+        try:
+            response = re.get(
+                f'https://{summonerRegion}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}?api_key={self.token}')
+        except ConnectionError as conerr:
+            print('Error connecting to api')
+        data = json.loads(response.text)
+        return data['id']
+
+    # Check if the verification code is matching the summoner
+    def verifySummonerCode(self, encryptedSummonerId, summonerRegion, summonerCode):
+        response = re.get(
+            f'https://{summonerRegion}.api.riotgames.com/lol/platform/v4/third-party-code/by-summoner/{encryptedSummonerId}?api_key={self.token}')
+
+        if summonerCode == response.text.replace('"', ''):
             return True
         else:
             return False

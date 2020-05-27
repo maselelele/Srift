@@ -5,6 +5,7 @@ from concurrent.futures._base import TimeoutError
 from utils.riot import RiotConnection
 from discord.utils import get
 from discord.errors import NotFound
+from uuid import uuid4
 
 
 class UserChannel(commands.Cog):
@@ -90,8 +91,7 @@ class UserChannel(commands.Cog):
 
             try:
                 region_reaction, region_reaction_user = await self.client.wait_for('reaction_add', check=check, timeout=30.0)
-                await region_reaction.remove(region_reaction_user)
-
+                await region_message.clear_reactions()
                 user_region = list(regions.keys())[
                     list(regions.values()).index(f'{region_reaction.emoji[:1]}\U000020E3')]
 
@@ -113,6 +113,41 @@ class UserChannel(commands.Cog):
                 except NotFound as nfe:
                     return
                 return
+
+            # Verification process
+            verification_code = uuid4().hex[:8].upper()
+            verification_embed = discord.Embed(
+                title='Verification', url='https://srift.github.io/', description='To ensure that this username belongs to you, please follow the steps below...', color=0x0cc2b7)
+            verification_embed.set_image(url='https://i.imgur.com/cSfkmp6.gif')
+            verification_embed.add_field(
+                name='Step 1:', value='Open your League of Legends Client')
+            verification_embed.add_field(
+                name='Step 2:', value='Go to your settings, scroll down and select \'Verification\'')
+            verification_embed.add_field(
+                name='Step 3:', value=f'Paste in `` {verification_code} `` and hit \'Save\'')
+            verification_embed.add_field(
+                name='Step 4:', value='When done, react with :white_check_mark: to this message')
+
+            verification_message = await self.channel.send(embed=verification_embed)
+            await verification_message.add_reaction('\U00002705')
+
+            try:
+                verification_reaction, verification_reaction_user = await self.client.wait_for('reaction_add', check=check, timeout=120.0)
+                await verification_reaction.remove(verification_reaction_user)
+                user_summonerId = self.riot_api.getEncryptedSummonerIdByName(
+                    name_message.content, user_region)
+
+                await verification_message.clear_reactions()
+
+                if self.riot_api.verifySummonerCode(user_summonerId, user_region, verification_code):
+                    await self.channel.send('Verified')
+                else:
+                    await self.channel.send('Not verified')
+
+            except TimeoutError as toe:
+                await self.channel.send('You needed too long, please recreate your channel')
+                user_overwrite.send_messages = False
+                await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
 
         else:
             # TODO: User existing

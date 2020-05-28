@@ -24,10 +24,13 @@ class UserChannel(commands.Cog):
 
         if data is None:
             # Set some permissions
-            await self.channel.set_permissions(self.payload.member.guild.default_role, read_messages=False)
+            everyone_overwrite = discord.PermissionOverwrite()
+            everyone_overwrite.read_messages = False
+            await self.channel.set_permissions(self.payload.member.guild.default_role, overwrite=everyone_overwrite)
 
             user_overwrite = discord.PermissionOverwrite()
             user_overwrite.read_messages = True
+            user_overwrite.send_messages = True
             user_overwrite.add_reactions = False
             user_overwrite.create_instant_invite = False
             await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
@@ -54,7 +57,7 @@ class UserChannel(commands.Cog):
                 try:
                     await self.channel.send('You needed too long, please recreate your channel')
                     user_overwrite.send_messages = False
-                    await self.channel.set_permissions(self.payload.member.guild.default_role, overwrite=user_overwrite)
+                    await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                 except NotFound as nfe:
                     return
                 return
@@ -74,7 +77,7 @@ class UserChannel(commands.Cog):
 
             # Ask user for the summoner region
             region_embed = discord.Embed(
-                title='Please select the reagion your summoner is playing in', color=0x0cc2b7)
+                title='Please select the region your summoner is playing in', color=0x0cc2b7)
             for i in range(len(regions)):
                 region_embed.add_field(name=list(regions.keys())[i],
                                        value=list(regions.values())[i], inline=True)
@@ -108,10 +111,13 @@ class UserChannel(commands.Cog):
             except TimeoutError as toe:
                 try:
                     await self.channel.send('You needed too long, please recreate your channel')
+                    await region_message.clear_reactions()
                     user_overwrite.send_messages = False
                     await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                 except NotFound as nfe:
                     return
+                return
+            except NotFound as nfe:
                 return
 
             # Verification process
@@ -120,13 +126,13 @@ class UserChannel(commands.Cog):
                 title='Verification', url='https://srift.github.io/', description='To ensure that this username belongs to you, please follow the steps below...', color=0x0cc2b7)
             verification_embed.set_image(url='https://i.imgur.com/cSfkmp6.gif')
             verification_embed.add_field(
-                name='Step 1:', value='Open your League of Legends Client')
+                name='Step 1:', value='Open your League of Legends Client', inline=False)
             verification_embed.add_field(
-                name='Step 2:', value='Go to your settings, scroll down and select \'Verification\'')
+                name='Step 2:', value='Go to your settings, scroll down and select \'Verification\'', inline=False)
             verification_embed.add_field(
-                name='Step 3:', value=f'Paste in `` {verification_code} `` and hit \'Save\'')
+                name='Step 3:', value=f'Paste in `` {verification_code} `` and hit \'Save\'', inline=False)
             verification_embed.add_field(
-                name='Step 4:', value='When done, react with :white_check_mark: to this message')
+                name='Step 4:', value='When done, react with :white_check_mark: to this message', inline=False)
 
             verification_message = await self.channel.send(embed=verification_embed)
             await verification_message.add_reaction('\U00002705')
@@ -141,11 +147,14 @@ class UserChannel(commands.Cog):
 
                 if self.riot_api.verifySummonerCode(user_summonerId, user_region, verification_code):
                     await self.channel.send('Verified')
+                    await verification_message.clear_reactions()
                 else:
                     await self.channel.send('Not verified')
+                    await verification_message.clear_reactions()
 
             except TimeoutError as toe:
                 await self.channel.send('You needed too long, please recreate your channel')
+                await verification_message.clear_reactions()
                 user_overwrite.send_messages = False
                 await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
 

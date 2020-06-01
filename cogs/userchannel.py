@@ -148,6 +148,17 @@ class UserChannel(commands.Cog):
                 if self.riot_api.verifySummonerCode(user_summonerId, user_region, verification_code):
                     await self.channel.send('Verified')
                     await verification_message.clear_reactions()
+
+                    # Save user to database
+                    SriftUser(
+                        discord_id=self.payload.user_id,
+                        summoner_id=user_summonerId,
+                        summoner_region=user_region,
+                        summoner_accountId=self.riot_api.getAccountIdByExistingUser(),
+                        summoner_puuid=self.riot_api.getPuuidByExistingUser(),
+                        summoner_name=self.riot_api.getNameByExistingUser()
+                    ).save()
+
                 else:
                     await self.channel.send('Not verified')
                     await verification_message.clear_reactions()

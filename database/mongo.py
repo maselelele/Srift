@@ -48,8 +48,11 @@ class SriftGuild(Document):
 class SriftUser(Document):
     date_created = DateTimeField(default=datetime.utcnow)
     discord_id = IntField()
-    verified = BooleanField(default=False)
     summoner_id = StringField()
+    summoner_region = StringField()
+    summoner_accountId = StringField()
+    summoner_puuid = StringField()
+    summoner_name = StringField()
 
     meta = {
         'indexes': ['discord_id'],

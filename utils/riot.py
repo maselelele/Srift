@@ -30,8 +30,8 @@ class RiotConnection():
                 f'https://{summonerRegion}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}?api_key={self.token}')
         except ConnectionError as conerr:
             print('Error connecting to api')
-        data = json.loads(response.text)
-        return data['id']
+        self.data = json.loads(response.text)
+        return self.data['id']
 
     # Check if the verification code is matching the summoner
     def verifySummonerCode(self, encryptedSummonerId, summonerRegion, summonerCode):
@@ -42,3 +42,15 @@ class RiotConnection():
             return True
         else:
             return False
+
+    # Get summoner accountId
+    def getAccountIdByExistingUser(self):
+        return self.data['accountId']
+
+    # Get summoner puuid
+    def getPuuidByExistingUser(self):
+        return self.data['puuid']
+
+    # Get summoner name
+    def getNameByExistingUser(self):
+        return self.data['name']

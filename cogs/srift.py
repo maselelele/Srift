@@ -19,6 +19,7 @@ class Srift(commands.Cog):
 
             srift_category = await guild.create_category_channel('SRIFT-BOT')
             srift_text = await guild.create_text_channel(name='srift-bot', category=srift_category)
+            await srift_text.set_permissions(guild.default_role, add_reactions=False, send_messages=False)
 
             embed = discord.Embed(
                 title='Create your channel', color=0x0cc2b7)

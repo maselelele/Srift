@@ -12,10 +12,22 @@ class Reaction(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        # Return if reaction comes from the bot
         if payload.user_id == self.client.user.id:
             return
+
+        channel = self.client.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+
+        # Delete message on checkmark reaction
+        if message.author.id == self.client.user.id:
+            if payload.emoji.name == '\U00002714':
+                await message.delete()
+
+        # Return in not initialized
         if not SriftGuild.objects.get(guild_id=payload.guild_id).initialized:
             return
+
         if payload.message_id == SriftGuild.objects.get(guild_id=payload.guild_id).srift_ids['srift_message']:
             reaction_guild = self.client.get_guild(payload.guild_id)
             reaction_channel = self.client.get_channel(payload.channel_id)

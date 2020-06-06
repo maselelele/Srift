@@ -14,7 +14,8 @@ class Srift(commands.Cog):
         guild = ctx.message.guild
         if subcommand == 'init':
             if SriftGuild.objects.get(guild_id=guild.id).initialized:
-                await ctx.send('Bot already initialized')
+                already_message = await ctx.send('Bot already initialized')
+                await already_message.add_reaction('\U00002714')
                 return
 
             srift_category = await guild.create_category_channel('SRIFT-BOT')
@@ -29,7 +30,8 @@ class Srift(commands.Cog):
                             value=f'React with  \U0001F534', inline=True)
 
             msg = await srift_text.send(embed=embed)
-            await ctx.send(f'Srift channels created!')
+            created_message = await ctx.send(f'Srift channels created!')
+            await created_message.add_reaction('\U00002714')
             await msg.add_reaction('\U0001F7E2')
             await msg.add_reaction('\U0001F534')
 
@@ -46,12 +48,14 @@ class Srift(commands.Cog):
             except Exception as e:
                 print(e)
             if guild_mongo.initialized:
-                await ctx.send(f'Terminating Srift Channels...')
+                term_message = await ctx.send(f'Terminating Srift Channels...')
+                await term_message.add_reaction('\U00002714')
                 for channel in list(reversed(guild.channels)):
                     if channel.id in guild_mongo.srift_ids.values():
                         await channel.delete()
             else:
-                await ctx.send(f'No Srift Channels have been initialized yet.')
+                no_message = await ctx.send(f'No Srift Channels have been initialized yet.')
+                await no_message.add_reaction('\U00002714')
 
             SriftGuild.objects(guild_id=guild.id).get().update(
                 srift_ids={},

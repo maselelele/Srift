@@ -41,6 +41,9 @@ class UserChannel(commands.Cog):
                 description='It looks like it\'s your first time using this bot.\nWould you write me your summoner name here so that I can create a profile for you?',
                 color=0x0cc2b7)
 
+            tooLong_embed = discord.Embed(
+                title='You needed too long', description='Please recreate your channel', color=0xbf6900)
+
             # Ask user for summoner name
             await self.channel.send(embed=welcome_embed)
             try:
@@ -55,7 +58,7 @@ class UserChannel(commands.Cog):
                     return
             except TimeoutError as toe:
                 try:
-                    await self.channel.send('You needed too long, please recreate your channel')
+                    await self.channel.send(embed=tooLong_embed)
                     user_overwrite.send_messages = False
                     await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                 except NotFound as nfe:
@@ -100,17 +103,18 @@ class UserChannel(commands.Cog):
 
                 # -- Check if summoner name exists
                 if self.riot_api.verifySummonerName(name_message.content, user_region.lower()):
-                    await self.channel.send(f'Looks like your summoner name is valid in {user_region}!')
                     user_overwrite.send_messages = False
                     await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                 else:
-                    await self.channel.send('Invalid summoner name, please recreate your channel!')
+                    invalidSummoner_embed = discord.Embed(
+                        title='Invalid summoner name', description='Please recreate your channel!', color=0xc10600)
+                    await self.channel.send(embed=invalidSummoner_embed)
                     user_overwrite.send_messages = False
                     await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
                     return
             except TimeoutError as toe:
                 try:
-                    await self.channel.send('You needed too long, please recreate your channel')
+                    await self.channel.send(embed=tooLong_embed)
                     await region_message.clear_reactions()
                     user_overwrite.send_messages = False
                     await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)
@@ -146,7 +150,9 @@ class UserChannel(commands.Cog):
                 await verification_message.clear_reactions()
 
                 if self.riot_api.verifySummonerCode(user_summonerId, user_region, verification_code):
-                    await self.channel.send('Verified')
+                    verified_embed = discord.Embed(
+                        title='Verified', color=0X0cc200)
+                    await self.channel.send(embed=verified_embed)
                     await verification_message.clear_reactions()
 
                     # Save user to database
@@ -160,11 +166,13 @@ class UserChannel(commands.Cog):
                     ).save()
 
                 else:
-                    await self.channel.send('Not verified')
+                    notVerified_embed = discord.Embed(
+                        title='Not Verified', color=0xc10600)
+                    await self.channel.send(embed=notVerified_embed)
                     await verification_message.clear_reactions()
 
             except TimeoutError as toe:
-                await self.channel.send('You needed too long, please recreate your channel')
+                await self.channel.send(embed=tooLong_embed)
                 await verification_message.clear_reactions()
                 user_overwrite.send_messages = False
                 await self.channel.set_permissions(self.client.get_user(self.payload.user_id), overwrite=user_overwrite)

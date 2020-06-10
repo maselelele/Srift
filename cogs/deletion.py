@@ -20,8 +20,11 @@ class Deletion(commands.Cog):
         # Get channel ids from database
         srift_ids = list(SriftGuild.objects.get(
             guild_id=channel.guild.id).srift_ids.values())
-        userchannel_ids = list(SriftGuild.objects.get(
+        userchannel_users = list(SriftGuild.objects.get(
             guild_id=channel.guild.id).user_channels.values())
+        userchannel_ids = []
+        for dic in userchannel_users:
+            userchannel_ids.append(dic['channel_id'])
 
         # Check if deleted channel was part of Srift Channels
         if channel.id in srift_ids:
@@ -42,8 +45,18 @@ class Deletion(commands.Cog):
                 srift_ids={})
             SriftGuild.objects(guild_id=channel.guild.id).get().update(
                 initialized=False)
+
+        # Check if deleted channel was part of the User Channels
         elif channel.id in userchannel_ids:
-            pass
+            userchannels_dict = dict(SriftGuild.objects(
+                guild_id=channel.guild.id).get().to_mongo()['user_channels'])
+
+            for userid, userid_data in userchannels_dict.copy().items():
+                if userid_data['channel_id'] == channel.id:
+                    del userchannels_dict[userid]
+
+            SriftGuild.objects(guild_id=channel.guild.id).get().update(
+                user_channels=userchannels_dict)
 
 
 def setup(client):
